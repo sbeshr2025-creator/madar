@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sbeshr2025-creator.github.io/madar/sitemap.xml
