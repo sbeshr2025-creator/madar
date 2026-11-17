@@ -24,9 +24,9 @@
 <meta name="twitter:description" content="تدرّب على التداول بأموال افتراضية وأسعار سوق مرجعية.">
 <meta name="twitter:image" content="https://sbeshr2025-creator.github.io/madar/assets/og-image.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"مدار","url":"https://sbeshr2025-creator.github.io/madar/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":"ar","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"منصة تجريبية للتدرّب على تداول الأصول الرقمية بأموال افتراضية."}</script>
-<link rel="preconnect" href="https://api.gateio.ws" crossorigin>
+<link rel="preconnect" href="https://api.coingecko.com" crossorigin>
 <script>try{var p=JSON.parse(localStorage.getItem('madar-prefs-v1')||'{}');if(p.theme)document.documentElement.dataset.theme=p.theme}catch(e){}</script>
-<link rel="stylesheet" href="css/landing.css?v=2">
+<link rel="stylesheet" href="css/landing.css?v=3">
 </head>
 <body>
 <a class="skip-link" href="#main">تخطَّ إلى المحتوى</a>
@@ -80,7 +80,7 @@
   <div class="wrap">
     <div class="section-head"><span class="kicker">المزايا</span><h2>كل أدوات المنصة الاحترافية، بدون أي مخاطرة</h2><p>صُممت الواجهة لتشبه منصات التداول الحديثة، لتتعلّم المفاهيم كما ستراها في الواقع.</p></div>
     <div class="features">
-      <article class="feature"><div class="f-ico">📈</div><h3>أسعار وشموع مرجعية</h3><p>شموع يابانية بفترات 15 دقيقة حتى أسبوع، ودفتر أوامر وآخر الصفقات، من بيانات سوق عامة للقراءة فقط مع بديل محاكاة تلقائي.</p></article>
+      <article class="feature"><div class="f-ico">📈</div><h3>أسعار وشموع مرجعية</h3><p>شموع يابانية لفترات من يوم حتى 3 أشهر من مصدر أسعار عام للعرض فقط، مع دفتر أوامر محاكى وبديل محاكاة تلقائي عند الانقطاع.</p></article>
       <article class="feature"><div class="f-ico">⇄</div><h3>تداول فوري تجريبي</h3><p>أوامر سوق فورية وأوامر محددة تُنفَّذ تلقائيًا عندما يلمس السعر حدّها، مع رسوم محاكاة 0.1% وأزرار 25/50/100%.</p></article>
       <article class="feature"><div class="f-ico">⚡</div><h3>محاكي العقود الآجلة</h3><p>مراكز طويلة وقصيرة برافعة 1× حتى 20×، هامش معزول، وقف خسارة وجني ربح، وسعر تصفية تقريبي مرسوم على المخطط.</p></article>
       <article class="feature"><div class="f-ico">👛</div><h3>محفظة افتراضية</h3><p>رصيد ابتدائي 10,000 USDT وأصول متنوعة، تتحدّث قيمتها مع السعر، مع إمكانية إضافة رصيد وهمي أو إخفاء الأرقام.</p></article>
@@ -119,7 +119,7 @@
   <div class="wrap narrow">
     <div class="section-head"><span class="kicker">الأسئلة الشائعة</span><h2>أسئلة يطرحها الجميع</h2></div>
     <details><summary>هل أتداول بأموال حقيقية؟</summary><p>لا. كل الأرصدة والأوامر والمراكز افتراضية بالكامل. لا يوجد إيداع أو سحب، ولا تُرسل أي أوامر إلى أي منصة أو وسيط.</p></details>
-    <details><summary>من أين تأتي الأسعار؟</summary><p>تُقرأ الأسعار والشموع ودفتر الأوامر من واجهة Gate العامة بدون أي حساب أو مفاتيح، للعرض فقط. إذا انقطعت أو أوقفتها من الإعدادات تتحول المنصة تلقائيًا إلى أسعار محاكاة.</p></details>
+    <details><summary>من أين تأتي الأسعار؟</summary><p>تُقرأ الأسعار والشموع للعرض فقط من واجهة CoinGecko العامة، بدون أي حساب أو مفاتيح، وتتحدّث كل 45 ثانية تقريبًا. دفتر الأوامر وآخر الصفقات محاكاة حول السعر المرجعي. إذا انقطع المصدر أو أوقفته من الإعدادات تتحول المنصة تلقائيًا إلى أسعار محاكاة. لا ترتبط مدار بأي منصة تداول.</p></details>
     <details><summary>هل أحتاج إلى حساب أو تسجيل دخول؟</summary><p>لا. لا نطلب اسمًا أو بريدًا أو كلمة مرور. تُحفظ بياناتك التجريبية في متصفحك فقط (localStorage) ويمكنك مسحها بزر «إعادة ضبط البيانات».</p></details>
     <details><summary>هل تعمل على الجوال؟ وهل يمكن تثبيتها؟</summary><p>نعم. الواجهة متجاوبة مع شريط تنقّل سفلي على الجوال، ويمكنك تثبيتها من قائمة المتصفح «إضافة إلى الشاشة الرئيسية». الواجهة تعمل دون اتصال، والأسعار تحتاج إنترنت.</p></details>
     <details><summary>هل نتائج المحاكاة تعني أنني سأربح في الواقع؟</summary><p>لا. المحاكاة لا تشمل الانزلاق السعري الكامل ولا السيولة الحقيقية ولا الضغط النفسي. التداول الحقيقي، خصوصًا بالرافعة، قد يؤدي إلى خسارة رأس المال كاملًا. لا شيء هنا نصيحة مالية.</p></details>
@@ -143,6 +143,6 @@
   </div>
   <div class="wrap foot-note">© <span id="year">2026</span> مدار · نموذج تعليمي لا يقدّم خدمات مالية ولا تداولًا حقيقيًا ولا نصائح استثمارية. الأسعار مرجعية للعرض فقط وقد تتأخر أو تختلف. لا ارتباط رسميًا بأي منصة تداول.</div>
 </footer>
-<script src="js/landing.js?v=2" defer></script>
+<script src="js/landing.js?v=3" defer></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 /* مدار — Service Worker: يعمل دون اتصال للواجهة فقط؛ لا يخزّن بيانات السوق */
-const VERSION='madar-v2';
-const SHELL=['./','./index.html','./404.html','./css/landing.css?v=2','./js/landing.js?v=2','./app/','./app/index.html','./app/css/app.css?v=2','./app/js/charts.js?v=2','./app/js/market.js?v=2','./app/js/app.js?v=2','./manifest.webmanifest','./assets/logo.svg','./assets/favicon.svg','./assets/icon-192.png','./assets/icon-512.png'];
+const VERSION='madar-v3';
+const SHELL=['./','./index.html','./404.html','./css/landing.css?v=3','./js/landing.js?v=3','./app/','./app/index.html','./app/css/app.css?v=3','./app/js/charts.js?v=3','./app/js/market.js?v=3','./app/js/app.js?v=3','./manifest.webmanifest','./assets/logo.svg','./assets/favicon.svg','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const req=e.request;if(req.method!=='GET')return;const url=new URL(req.url);if(url.origin!==location.origin)return; // لا نتدخل في طلبات الأسعار الخارجية

@@ -3,11 +3,11 @@
 'use strict';
 function cssVar(name,fallback){const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();return v||fallback}
 function fmt(n){if(!Number.isFinite(n))return '—';const d=n>=1000?2:n>=1?3:n>=0.01?5:7;return Number(n).toLocaleString('en-US',{minimumFractionDigits:Math.min(d,2),maximumFractionDigits:d})}
-function timeLabel(t,interval){const d=new Date(t*1000);if(interval==='1d'||interval==='7d')return d.toLocaleDateString('ar',{month:'short',day:'numeric'});return d.toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit',hour12:false})}
+function timeLabel(t,interval){const d=new Date(t*1000);if(interval!=='1d')return d.toLocaleDateString('ar',{month:'short',day:'numeric'});return d.toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit',hour12:false})}
 class CandleChart{
   constructor(el){
     this.el=el;this.canvas=el.querySelector('canvas');this.tip=el.querySelector('.chart-tip');this.ctx=this.canvas.getContext('2d');
-    this.data=[];this.interval='1h';this.hover=-1;this.lines=[];
+    this.data=[];this.interval='1d';this.hover=-1;this.lines=[];
     this.ro=new ResizeObserver(()=>this.draw());this.ro.observe(el);
     const move=e=>{const r=this.canvas.getBoundingClientRect();this.hoverX=e.clientX-r.left;this.draw()};
     this.canvas.addEventListener('pointermove',move);
@@ -22,7 +22,7 @@ class CandleChart{
     const up=cssVar('--green','#36d5a0'),down=cssVar('--red','#ff7185'),grid=cssVar('--grid','#ffffff12'),muted=cssVar('--muted','#8998ad'),accent=cssVar('--blue','#8c96ff');
     const data=this.data;ctx.font='10px Tahoma, Arial, sans-serif';
     if(!data.length){ctx.fillStyle=muted;ctx.textAlign='center';ctx.fillText('جارٍ تحميل البيانات…',w/2,h/2);this.tip.style.opacity=0;return}
-    const axisW=62,timeH=18,volH=Math.round((h-timeH)*.16),plotW=w-axisW,plotH=h-timeH-volH-6;
+    const axisW=62,timeH=18,volH=data.some(k=>k.v>0)?Math.round((h-timeH)*.16):0,plotW=w-axisW,plotH=h-timeH-volH-6;
     let lo=Infinity,hi=-Infinity,vmax=0;for(const k of data){lo=Math.min(lo,k.l);hi=Math.max(hi,k.h);vmax=Math.max(vmax,k.v||0)}
     for(const L of this.lines){if(L.price>0){lo=Math.min(lo,L.price);hi=Math.max(hi,L.price)}}
     if(hi===lo){hi*=1.001;lo*=.999}const pad=(hi-lo)*.08;hi+=pad;lo-=pad;
@@ -44,7 +44,7 @@ class CandleChart{
     ctx.fillStyle=lc;ctx.fillRect(plotW+1,ly-9,axisW-1,18);ctx.fillStyle='#fff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(fmt(last.c),plotW+5,ly);
     // crosshair
     if(this.hoverX!=null&&this.hoverX<plotW){const i=Math.max(0,Math.min(data.length-1,Math.floor(this.hoverX/step))),k=data[i];ctx.strokeStyle=muted;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(Math.round(x(i))+.5,0);ctx.lineTo(Math.round(x(i))+.5,vy);ctx.stroke();ctx.setLineDash([]);
-      const ch=((k.c-k.o)/k.o*100);this.tip.innerHTML=`<b>${timeLabel(k.t,this.interval==='1d'||this.interval==='7d'?'1d':'1h')}${this.interval==='1d'||this.interval==='7d'?'':' · '+new Date(k.t*1000).toLocaleDateString('ar',{month:'short',day:'numeric'})}</b><span>افتتاح ${fmt(k.o)}</span><span>أعلى ${fmt(k.h)}</span><span>أدنى ${fmt(k.l)}</span><span>إغلاق ${fmt(k.c)}</span><span class="${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span>`;this.tip.style.opacity=1}
+      const ch=((k.c-k.o)/k.o*100);this.tip.innerHTML=`<b>${timeLabel(k.t,this.interval==='1d'?'1d':'30d')}${this.interval!=='1d'?'':' · '+new Date(k.t*1000).toLocaleDateString('ar',{month:'short',day:'numeric'})}</b><span>افتتاح ${fmt(k.o)}</span><span>أعلى ${fmt(k.h)}</span><span>أدنى ${fmt(k.l)}</span><span>إغلاق ${fmt(k.c)}</span><span class="${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span>`;this.tip.style.opacity=1}
     else this.tip.style.opacity=0;
   }
 }
