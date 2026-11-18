@@ -1,52 +1,48 @@
-/* مدار — مخطط شموع خفيف مرسوم على Canvas (بدون مكتبات خارجية) */
+/* مدار v4 — مخطط شموع على Canvas مع مؤشرات: EMA20/50، بولنجر، RSI، MACD (بلا مكتبات خارجية) */
 (function(){
 'use strict';
-function cssVar(name,fallback){const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();return v||fallback}
+const css=(n,f)=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||f;
 function fmt(n){if(!Number.isFinite(n))return '—';const d=n>=1000?2:n>=1?3:n>=0.01?5:7;return Number(n).toLocaleString('en-US',{minimumFractionDigits:Math.min(d,2),maximumFractionDigits:d})}
-function timeLabel(t,interval){const d=new Date(t*1000);if(interval!=='1d')return d.toLocaleDateString('ar',{month:'short',day:'numeric'});return d.toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit',hour12:false})}
+function tl(t,tf){const d=new Date(t*1000);return tf==='1d'||tf==='4h'?d.toLocaleDateString('ar',{month:'short',day:'numeric'}):d.toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit',hour12:false})}
 class CandleChart{
-  constructor(el){
-    this.el=el;this.canvas=el.querySelector('canvas');this.tip=el.querySelector('.chart-tip');this.ctx=this.canvas.getContext('2d');
-    this.data=[];this.interval='1d';this.hover=-1;this.lines=[];
-    this.ro=new ResizeObserver(()=>this.draw());this.ro.observe(el);
-    const move=e=>{const r=this.canvas.getBoundingClientRect();this.hoverX=e.clientX-r.left;this.draw()};
-    this.canvas.addEventListener('pointermove',move);
-    this.canvas.addEventListener('pointerdown',move);
-    this.canvas.addEventListener('pointerleave',()=>{this.hoverX=null;this.draw()});
-  }
-  setData(candles,opts={}){this.data=candles||[];this.interval=opts.interval||this.interval;this.lines=opts.lines||[];this.draw()}
-  draw(){
-    const el=this.el,c=this.canvas,ctx=this.ctx;const w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;
-    const dpr=Math.min(window.devicePixelRatio||1,2);if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}
-    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-    const up=cssVar('--green','#36d5a0'),down=cssVar('--red','#ff7185'),grid=cssVar('--grid','#ffffff12'),muted=cssVar('--muted','#8998ad'),accent=cssVar('--blue','#8c96ff');
-    const data=this.data;ctx.font='10px Tahoma, Arial, sans-serif';
-    if(!data.length){ctx.fillStyle=muted;ctx.textAlign='center';ctx.fillText('جارٍ تحميل البيانات…',w/2,h/2);this.tip.style.opacity=0;return}
-    const axisW=62,timeH=18,volH=data.some(k=>k.v>0)?Math.round((h-timeH)*.16):0,plotW=w-axisW,plotH=h-timeH-volH-6;
-    let lo=Infinity,hi=-Infinity,vmax=0;for(const k of data){lo=Math.min(lo,k.l);hi=Math.max(hi,k.h);vmax=Math.max(vmax,k.v||0)}
-    for(const L of this.lines){if(L.price>0){lo=Math.min(lo,L.price);hi=Math.max(hi,L.price)}}
-    if(hi===lo){hi*=1.001;lo*=.999}const pad=(hi-lo)*.08;hi+=pad;lo-=pad;
-    const y=p=>6+(hi-p)/(hi-lo)*(plotH-6);const step=plotW/data.length,bw=Math.max(1,Math.min(14,step*.68));const x=i=>i*step+step/2;
-    // grid + price labels (right side)
-    ctx.strokeStyle=grid;ctx.lineWidth=1;ctx.fillStyle=muted;ctx.textAlign='left';ctx.textBaseline='middle';
-    for(let g=0;g<=4;g++){const p=lo+(hi-lo)*g/4,yy=Math.round(y(p))+.5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(plotW,yy);ctx.stroke();ctx.fillText(fmt(p),plotW+6,yy)}
-    // time labels
-    ctx.textAlign='center';ctx.textBaseline='alphabetic';const every=Math.max(1,Math.ceil(data.length/Math.max(2,Math.floor(plotW/80))));
-    for(let i=0;i<data.length;i+=every){ctx.fillText(timeLabel(data[i].t,this.interval),Math.min(Math.max(x(i),24),plotW-24),h-4)}
-    // volume
-    const vy=h-timeH;for(let i=0;i<data.length;i++){const k=data[i];if(!vmax)break;const vh=(k.v/vmax)*volH;ctx.fillStyle=(k.c>=k.o?up:down)+'40';ctx.fillRect(x(i)-bw/2,vy-vh,bw,vh)}
-    // candles
-    for(let i=0;i<data.length;i++){const k=data[i],col=k.c>=k.o?up:down;ctx.strokeStyle=col;ctx.fillStyle=col;const cx=Math.round(x(i))+.5;ctx.beginPath();ctx.moveTo(cx,y(k.h));ctx.lineTo(cx,y(k.l));ctx.stroke();const top=y(Math.max(k.o,k.c)),bh=Math.max(1,Math.abs(y(k.o)-y(k.c)));ctx.fillRect(cx-bw/2,top,bw,bh)}
-    // extra lines (entry / liquidation / limit)
-    for(const L of this.lines){if(!(L.price>0))continue;const yy=Math.round(y(L.price))+.5;ctx.setLineDash([4,4]);ctx.strokeStyle=L.color||accent;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(plotW,yy);ctx.stroke();ctx.setLineDash([]);if(L.label){ctx.fillStyle=L.color||accent;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(L.label,4,yy-2)}}
-    // last price tag
-    const last=data[data.length-1],ly=Math.round(y(last.c))+.5,lc=last.c>=last.o?up:down;ctx.setLineDash([2,3]);ctx.strokeStyle=lc;ctx.beginPath();ctx.moveTo(0,ly);ctx.lineTo(plotW,ly);ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle=lc;ctx.fillRect(plotW+1,ly-9,axisW-1,18);ctx.fillStyle='#fff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(fmt(last.c),plotW+5,ly);
-    // crosshair
-    if(this.hoverX!=null&&this.hoverX<plotW){const i=Math.max(0,Math.min(data.length-1,Math.floor(this.hoverX/step))),k=data[i];ctx.strokeStyle=muted;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(Math.round(x(i))+.5,0);ctx.lineTo(Math.round(x(i))+.5,vy);ctx.stroke();ctx.setLineDash([]);
-      const ch=((k.c-k.o)/k.o*100);this.tip.innerHTML=`<b>${timeLabel(k.t,this.interval==='1d'?'1d':'30d')}${this.interval!=='1d'?'':' · '+new Date(k.t*1000).toLocaleDateString('ar',{month:'short',day:'numeric'})}</b><span>افتتاح ${fmt(k.o)}</span><span>أعلى ${fmt(k.h)}</span><span>أدنى ${fmt(k.l)}</span><span>إغلاق ${fmt(k.c)}</span><span class="${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span>`;this.tip.style.opacity=1}
-    else this.tip.style.opacity=0;
-  }
+  constructor(el){this.el=el;this.canvas=el.querySelector('canvas');this.tip=el.querySelector('.chart-tip');this.ctx=this.canvas.getContext('2d');this.data=[];this.tf='1h';this.lines=[];this.ind={ema:true,bb:false,rsi:false,macd:false};this.calc=null;this.hoverX=null;
+    this.ro=new ResizeObserver(()=>this.draw());this.ro.observe(el);const mv=e=>{const r=this.canvas.getBoundingClientRect();this.hoverX=e.clientX-r.left;this.draw()};this.canvas.addEventListener('pointermove',mv);this.canvas.addEventListener('pointerdown',mv);this.canvas.addEventListener('pointerleave',()=>{this.hoverX=null;this.draw()})}
+  setData(c,o={}){this.data=c||[];this.tf=o.interval||this.tf;this.lines=o.lines||[];if(o.ind)this.ind=Object.assign({},this.ind,o.ind);this.compute();this.el.classList.toggle('loading',!this.data.length);this.draw()}
+  setIndicators(ind){this.ind=Object.assign({},this.ind,ind);this.compute();this.draw()}
+  compute(){const E=window.SmartEngine;if(!E||!this.data.length){this.calc=null;return}const C=this.data.map(k=>k.c);this.calc={e20:E.ema(C,20),e50:E.ema(C,50),bb:E.bollinger(C,20,2),rsi:E.rsi(C,14),macd:E.macd(C)}}
+  draw(){const el=this.el,c=this.canvas,ctx=this.ctx,w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;const dpr=Math.min(window.devicePixelRatio||1,2);if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+    const up=css('--green','#36d5a0'),down=css('--red','#ff7185'),grid=css('--grid','#ffffff12'),muted=css('--muted','#8998ad'),acc=css('--blue','#8c96ff'),gold='#efc878',cyan='#49c5d8';const D=this.data;ctx.font='10px "Madar Sans",Tahoma,Arial,sans-serif';
+    if(!D.length){this.tip.style.opacity=0;return}
+    const axisW=64,timeH=18,panes=[];if(this.ind.rsi)panes.push('rsi');if(this.ind.macd)panes.push('macd');const paneH=panes.length?Math.max(48,Math.round((h-timeH)*(panes.length===2?.18:.22))):0;const mainH=h-timeH-paneH*panes.length-(panes.length?6*panes.length:0);
+    const hasV=D.some(k=>k.v>0),volH=hasV?Math.round(mainH*.14):0,plotW=w-axisW,plotH=mainH-volH-4;const K=this.calc;
+    let lo=Infinity,hi=-Infinity,vmax=0;D.forEach((k,i)=>{lo=Math.min(lo,k.l);hi=Math.max(hi,k.h);vmax=Math.max(vmax,k.v||0);if(K&&this.ind.bb&&K.bb[1][i]!=null){hi=Math.max(hi,K.bb[1][i]);lo=Math.min(lo,K.bb[2][i])}});for(const L of this.lines)if(L.price>0){lo=Math.min(lo,L.price);hi=Math.max(hi,L.price)}
+    if(hi===lo){hi*=1.001;lo*=.999}const pad=(hi-lo)*.07;hi+=pad;lo-=pad;const y=p=>6+(hi-p)/(hi-lo)*(plotH-6),step=plotW/D.length,bw=Math.max(1,Math.min(12,step*.66)),x=i=>i*step+step/2;
+    ctx.strokeStyle=grid;ctx.lineWidth=1;ctx.fillStyle=muted;ctx.textAlign='left';ctx.textBaseline='middle';for(let g=0;g<=4;g++){const p=lo+(hi-lo)*g/4,yy=Math.round(y(p))+.5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(plotW,yy);ctx.stroke();ctx.fillText(fmt(p),plotW+6,yy)}
+    ctx.textAlign='center';ctx.textBaseline='alphabetic';const every=Math.max(1,Math.ceil(D.length/Math.max(2,Math.floor(plotW/80))));for(let i=0;i<D.length;i+=every)ctx.fillText(tl(D[i].t,this.tf),Math.min(Math.max(x(i),24),plotW-24),h-4);
+    if(hasV){const vy=mainH;for(let i=0;i<D.length;i++){const k=D[i],vh=(k.v/vmax)*volH;ctx.fillStyle=(k.c>=k.o?up:down)+'40';ctx.fillRect(x(i)-bw/2,vy-vh,bw,vh)}}
+    const line=(arr,col,wd=1.3,ys=y)=>{ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.beginPath();let st=false;arr.forEach((v,i)=>{if(v==null)return;const yy=ys(v);if(!st){ctx.moveTo(x(i),yy);st=true}else ctx.lineTo(x(i),yy)});ctx.stroke();ctx.lineWidth=1};
+    if(K&&this.ind.bb){ctx.fillStyle=acc+'12';ctx.beginPath();let st=false;K.bb[1].forEach((v,i)=>{if(v==null)return;if(!st){ctx.moveTo(x(i),y(v));st=true}else ctx.lineTo(x(i),y(v))});for(let i=D.length-1;i>=0;i--){const v=K.bb[2][i];if(v!=null)ctx.lineTo(x(i),y(v))}ctx.closePath();ctx.fill();line(K.bb[1],acc+'99',1);line(K.bb[2],acc+'99',1);line(K.bb[0],acc+'55',1)}
+    for(let i=0;i<D.length;i++){const k=D[i],col=k.c>=k.o?up:down;ctx.strokeStyle=col;ctx.fillStyle=col;const cx=Math.round(x(i))+.5;ctx.beginPath();ctx.moveTo(cx,y(k.h));ctx.lineTo(cx,y(k.l));ctx.stroke();const top=y(Math.max(k.o,k.c)),bh=Math.max(1,Math.abs(y(k.o)-y(k.c)));ctx.fillRect(cx-bw/2,top,bw,bh)}
+    if(K&&this.ind.ema){line(K.e20,gold,1.4);line(K.e50,cyan,1.4)}
+    for(const L of this.lines){if(!(L.price>0))continue;const yy=Math.round(y(L.price))+.5;ctx.setLineDash([4,4]);ctx.strokeStyle=L.color||acc;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(plotW,yy);ctx.stroke();ctx.setLineDash([]);if(L.label){ctx.fillStyle=L.color||acc;ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(L.label,4,yy-2)}}
+    const last=D[D.length-1],ly=Math.round(y(last.c))+.5,lc=last.c>=last.o?up:down;ctx.setLineDash([2,3]);ctx.strokeStyle=lc;ctx.beginPath();ctx.moveTo(0,ly);ctx.lineTo(plotW,ly);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=lc;ctx.fillRect(plotW+1,ly-9,axisW-1,18);ctx.fillStyle='#fff';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(fmt(last.c),plotW+5,ly);
+    if(K&&this.ind.ema){ctx.textBaseline='top';ctx.fillStyle=gold;ctx.fillText('EMA20',6,4);ctx.fillStyle=cyan;ctx.fillText('EMA50',52,4)}
+    // panes
+    let top=mainH+6;for(const p of panes){ctx.strokeStyle=grid;ctx.beginPath();ctx.moveTo(0,top-3+.5);ctx.lineTo(w,top-3+.5);ctx.stroke();const ph=paneH;
+      if(p==='rsi'&&K){const ys=v=>top+(100-v)/100*ph;[30,70].forEach(v=>{ctx.setLineDash([3,3]);ctx.strokeStyle=grid;ctx.beginPath();ctx.moveTo(0,ys(v)+.5);ctx.lineTo(plotW,ys(v)+.5);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=muted;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(String(v),plotW+6,ys(v))});line(K.rsi,'#b48cff',1.4,ys);const lv=K.rsi[K.rsi.length-1];ctx.fillStyle='#b48cff';ctx.textBaseline='top';ctx.fillText('RSI 14 · '+(lv!=null?lv.toFixed(1):'—'),6,top+2)}
+      if(p==='macd'&&K){const [ml,sg,hs]=K.macd;let m=0;ml.forEach((v,i)=>{if(v!=null)m=Math.max(m,Math.abs(v));if(sg[i]!=null)m=Math.max(m,Math.abs(sg[i]))});m=m||1;const ys=v=>top+ph/2-v/m*(ph/2-4);hs.forEach((v,i)=>{if(v==null)return;ctx.fillStyle=(v>=0?up:down)+'88';const y0=ys(0),y1=ys(v);ctx.fillRect(x(i)-bw/2,Math.min(y0,y1),bw,Math.max(1,Math.abs(y1-y0)))});line(ml,acc,1.3,ys);line(sg,gold,1.2,ys);ctx.fillStyle=acc;ctx.textAlign='left';ctx.textBaseline='top';const lh=hs[hs.length-1];ctx.fillText('MACD 12/26/9 · '+(lh!=null?lh.toFixed(lh>=1||lh<=-1?2:5):'—'),6,top+2)}
+      top+=ph+6}
+    if(this.hoverX!=null&&this.hoverX<plotW){const i=Math.max(0,Math.min(D.length-1,Math.floor(this.hoverX/step))),k=D[i];ctx.strokeStyle=muted;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(Math.round(x(i))+.5,0);ctx.lineTo(Math.round(x(i))+.5,h-timeH);ctx.stroke();ctx.setLineDash([]);const ch=(k.c-k.o)/k.o*100;
+      let extra='';if(K){const r=K.rsi[i];if(this.ind.rsi&&r!=null)extra+=`<span>RSI ${r.toFixed(1)}</span>`;if(this.ind.ema&&K.e20[i]!=null)extra+=`<span>EMA20 ${fmt(K.e20[i])}</span>`}
+      this.tip.innerHTML=`<b>${new Date(k.t*1000).toLocaleString('ar',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})}</b><span>افتتاح ${fmt(k.o)}</span><span>أعلى ${fmt(k.h)}</span><span>أدنى ${fmt(k.l)}</span><span>إغلاق ${fmt(k.c)}</span><span class="${ch>=0?'up':'down'}">${ch>=0?'+':''}${ch.toFixed(2)}%</span>${extra}`;this.tip.style.opacity=1}else this.tip.style.opacity=0}
 }
-window.CandleChart=CandleChart;
+/* مخطط خطي بسيط (منحنى رأس المال / تاريخ الربح والخسارة) */
+function lineChart(canvas,points,opts={}){const el=canvas.parentElement,w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;const dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const muted=css('--muted','#8998ad'),grid=css('--grid','#ffffff12'),up=css('--green','#36d5a0'),down=css('--red','#ff7185');ctx.font='10px "Madar Sans",Tahoma,sans-serif';if(!points||points.length<2){ctx.fillStyle=muted;ctx.textAlign='center';ctx.fillText(opts.empty||'لا توجد بيانات كافية بعد',w/2,h/2);return}
+  const vs=points.map(p=>p[1]),base=opts.base!=null?opts.base:vs[0];let lo=Math.min(...vs,base),hi=Math.max(...vs,base);if(hi===lo){hi+=1;lo-=1}const pad=(hi-lo)*.1;lo-=pad;hi+=pad;const axisW=62,pw=w-axisW,ph=h-16,t0=points[0][0],t1=points[points.length-1][0]||t0+1;const X=t=>(t-t0)/((t1-t0)||1)*pw,Y=v=>4+(hi-v)/(hi-lo)*(ph-8);
+  ctx.strokeStyle=grid;ctx.fillStyle=muted;ctx.textAlign='left';ctx.textBaseline='middle';for(let g=0;g<=3;g++){const v=lo+(hi-lo)*g/3,yy=Math.round(Y(v))+.5;ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(pw,yy);ctx.stroke();ctx.fillText((opts.fmt||(v=>v.toFixed(0)))(v),pw+5,yy)}
+  ctx.setLineDash([4,4]);ctx.strokeStyle=muted;ctx.beginPath();ctx.moveTo(0,Y(base));ctx.lineTo(pw,Y(base));ctx.stroke();ctx.setLineDash([]);const lastV=vs[vs.length-1],col=lastV>=base?up:down;
+  const g=ctx.createLinearGradient(0,0,0,ph);g.addColorStop(0,col+'40');g.addColorStop(1,col+'00');ctx.beginPath();points.forEach(([t,v],i)=>i?ctx.lineTo(X(t),Y(v)):ctx.moveTo(X(t),Y(v)));ctx.lineTo(X(t1),ph);ctx.lineTo(0,ph);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.beginPath();points.forEach(([t,v],i)=>i?ctx.lineTo(X(t),Y(v)):ctx.moveTo(X(t),Y(v)));ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.stroke();
+  ctx.fillStyle=muted;ctx.textAlign='center';ctx.textBaseline='alphabetic';const dl=t=>new Date(t*1000).toLocaleDateString('ar',{month:'short',day:'numeric'});ctx.fillText(dl(t0),30,h-2);ctx.fillText(dl(t1),pw-30,h-2)}
+window.CandleChart=CandleChart;window.lineChart=lineChart;
 })();

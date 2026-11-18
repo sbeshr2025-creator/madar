@@ -18,7 +18,11 @@ function fmt(n){const d=n>=1000?2:n>=1?3:5;return '$'+n.toLocaleString('en-US',{
 function render(list,live){box.innerHTML=list.map(t=>`<span class="tk"><b>${t.s}</b><span class="p">${fmt(t.p)}</span><span class="${t.c>=0?'up':'down'}">${t.c>=0?'+':''}${t.c.toFixed(2)}%</span></span>`).join('');document.getElementById('tickerDot').classList.toggle('on',live);document.getElementById('tickerState').textContent=live?'أسعار مرجعية مباشرة':'أسعار تقريبية (غير متصل)'}
 const FALLBACK={BTC:63500,ETH:1770,SOL:72,BNB:583,XRP:.953,DOGE:.058,ADA:.151,AVAX:7.02,LINK:9.06};
 const IDS={BTC:'bitcoin',ETH:'ethereum',SOL:'solana',BNB:'binancecoin',XRP:'ripple',DOGE:'dogecoin',ADA:'cardano',AVAX:'avalanche-2',LINK:'chainlink'};
-async function load(){try{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids='+SYMS.map(s=>IDS[s]).join(',')+'&vs_currencies=usd&include_24hr_change=true');if(r.ok){const d=await r.json();const list=SYMS.map(s=>d[IDS[s]]&&d[IDS[s]].usd>0?{s,p:+d[IDS[s]].usd,c:+(d[IDS[s]].usd_24h_change||0)}:null).filter(Boolean);if(list.length){render(list,true);return}}}catch{}render(SYMS.map(s=>({s,p:FALLBACK[s],c:0})),false)}
-render(SYMS.map(s=>({s,p:FALLBACK[s],c:0})),false);load();setInterval(()=>{if(!document.hidden)load()},60000);
+const RAW='https://raw.githubusercontent.com/sbeshr2025-creator/ajcoin-data/main/';
+function tf(u,ms){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),ms||7000);return fetch(u,{signal:ac.signal,credentials:'omit'}).finally(()=>clearTimeout(t))}
+async function fromSnap(){const L=await (await tf(RAW+'latest.json')).json();const r=await tf(RAW+'m/'+L.b+'.json');if(!r.ok)throw 0;const m=await r.json();if(Date.now()/1000-m.t>900)throw 0;const rows=new Map((m.s||[]).map(x=>[x[0],x]));const list=SYMS.map(s=>{const x=rows.get(s+'_USDT');return x&&+x[1]>0?{s,p:+x[1],c:+x[2]||0}:null}).filter(Boolean);if(list.length<5)throw 0;return list}
+async function fromCG(){const r=await tf('https://api.coingecko.com/api/v3/simple/price?ids='+SYMS.map(s=>IDS[s]).join(',')+'&vs_currencies=usd&include_24hr_change=true');if(!r.ok)throw 0;const d=await r.json();const list=SYMS.map(s=>d[IDS[s]]&&d[IDS[s]].usd>0?{s,p:+d[IDS[s]].usd,c:+(d[IDS[s]].usd_24h_change||0)}:null).filter(Boolean);if(!list.length)throw 0;return list}
+async function load(){for(const f of [fromSnap,fromCG]){try{render(await f(),true);return}catch{}}render(SYMS.map(s=>({s,p:FALLBACK[s],c:0})),false)}
+render(SYMS.map(s=>({s,p:FALLBACK[s],c:0})),false);load();setInterval(()=>{if(!document.hidden)load()},90000);
 if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 })();
