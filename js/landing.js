@@ -26,3 +26,7 @@ async function load(){for(const f of [fromSnap,fromCG]){try{render(await f(),tru
 render(SYMS.map(s=>({s,p:FALLBACK[s],c:0})),false);load();setInterval(()=>{if(!document.hidden)load()},90000);
 if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 })();
+
+/* v5: عند الاستضافة تحت /madar/ على نطاق Ajcoin، عامل خدمة Ajcoin قد يخزّن صفحة مدار مكان صفحته الرئيسية؛ نصلح ذلك. */
+(function(){function fix(){try{if(!('caches' in window)||!/^\/madar\//.test(location.pathname))return;caches.keys().then(function(ks){ks.filter(function(k){return /^ajcoin-/.test(k)}).forEach(function(k){caches.open(k).then(function(c){var key=location.origin+'/index.html';return c.match(key).then(function(r){return r&&r.text()}).then(function(t){if(!t||t.indexOf('data-madar-page')<0)return;return fetch('/index.html',{cache:'no-store'}).then(function(r){if(!r.ok)return;return r.text().then(function(b){if(b.indexOf('data-madar-page')<0)return c.put(key,new Response(b,{headers:{'Content-Type':'text/html; charset=utf-8'}}))})})})})})}).catch(function(){})}catch(e){}}
+fix();setTimeout(fix,4000);setTimeout(fix,15000);window.__madarAjFix=fix})();

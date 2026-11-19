@@ -17,7 +17,7 @@ const ASSETS=[
  {s:'UNI',name:'Uniswap',icon:'U',cls:'uni',price:5.5,change:0,vol:0},
  {s:'AAVE',name:'Aave',icon:'A',cls:'aave',price:170,change:0,vol:0}
 ];
-const NAMES={dashboard:'نظرة عامة',markets:'الأسواق',trade:'التداول التجريبي',smart:'التداول الذكي التجريبي',futures:'العقود الآجلة التجريبية',tools:'حاسبة المخاطر',wallet:'المحفظة',orders:'الأوامر',activity:'سجل النشاط',alerts:'تنبيهات الأسعار',settings:'الإعدادات'};
+const NAMES={dashboard:'نظرة عامة',real:'حسابي الحقيقي',markets:'الأسواق',trade:'التداول التجريبي',smart:'التداول الذكي التجريبي',futures:'العقود الآجلة التجريبية',tools:'حاسبة المخاطر',wallet:'المحفظة',orders:'الأوامر',activity:'سجل النشاط',alerts:'تنبيهات الأسعار',settings:'الإعدادات'};
 const START={balances:{USDT:10000,BTC:.035,ETH:.4,SOL:2.5,BNB:1,XRP:120,ADA:250,DOGE:500,LINK:10,AVAX:3},orders:[],activity:[],alerts:[],watchlist:['BTC','ETH','SOL'],futures:{balance:10000,positions:[],history:[],shiftPct:0,symbol:'BTC',side:'long'},todayKey:new Date().toISOString().slice(0,10),todayOrders:0,hideBalances:false};
 const PREFS_KEY='madar-prefs-v1';
 let prefs=loadPrefs();

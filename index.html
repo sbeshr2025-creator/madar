@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl" data-theme="dark">
+<html lang="ar" dir="rtl" data-theme="dark" data-madar-page="1">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -27,7 +27,7 @@
 <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
 <link rel="preload" href="assets/fonts/NotoSansArabic-var.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var p=JSON.parse(localStorage.getItem('madar-prefs-v1')||'{}');if(p.theme)document.documentElement.dataset.theme=p.theme}catch(e){}</script>
-<link rel="stylesheet" href="css/landing.css?v=4">
+<link rel="stylesheet" href="css/landing.css?v=5">
 </head>
 <body>
 <a class="skip-link" href="#main">تخطَّ إلى المحتوى</a>
@@ -74,7 +74,7 @@
 </section>
 
 <section class="disclaimer-band" aria-label="تنبيه مهم">
-  <div class="wrap"><strong>تنبيه مهم:</strong> مدار أداة تعليمية تجريبية مستقلة. كل الأرصدة والأوامر والمراكز افتراضية وتُحفظ في متصفحك. لا حسابات، ولا إيداع أو سحب، ولا تداول حقيقي، ولا يُعدّ أي محتوى نصيحة مالية. الأسعار مرجعية للعرض فقط وقد تتأخر.</div>
+  <div class="wrap"><strong>تنبيه مهم:</strong> أقسام مدار العامة تجريبية: الأرصدة والأوامر والمراكز فيها افتراضية وتُحفظ في متصفحك. قسم «حسابي الحقيقي» خاص بمالك المنصة فقط، ويعمل عبر بوته في تيليجرام بحدود صغيرة وتأكيد ✅ لكل أمر — ولا يمكن لأي زائر التداول به. لا إيداع ولا سحب من الموقع، ولا يُعدّ أي محتوى نصيحة مالية. الأسعار مرجعية للعرض فقط وقد تتأخر.</div>
 </section>
 
 <section class="section" id="features">
@@ -135,7 +135,7 @@
 <section class="section alt" id="faq">
   <div class="wrap narrow">
     <div class="section-head"><span class="kicker">الأسئلة الشائعة</span><h2>أسئلة يطرحها الجميع</h2></div>
-    <details><summary>هل أتداول بأموال حقيقية؟</summary><p>لا. كل الأرصدة والأوامر والمراكز افتراضية بالكامل. لا يوجد إيداع أو سحب، ولا تُرسل أي أوامر إلى أي منصة أو وسيط.</p></details>
+    <details><summary>هل أتداول بأموال حقيقية؟</summary><p>للزوّار: لا، كل شيء افتراضي. يوجد قسم «حسابي الحقيقي» لمالك المنصة فقط: لا يحمل الموقع أي مفاتيح، والأوامر تُرسل إلى بوت المالك في تيليجرام الذي يتحقق من هويته ويطلب تأكيده ✅ ضمن حدود صغيرة (3 USDT فوري، 1 USDT هامش عقود، 20 USDT يوميًا)، ولا سحب إطلاقًا.</p></details>
     <details><summary>من أين تأتي الأسعار؟</summary><p>تُقرأ الأسعار والشموع للعرض فقط، بدون أي حساب أو مفاتيح: أولًا من لقطة أسعار عامة منشورة على raw.githubusercontent.com، ثم من واجهة CoinGecko العامة، وتتحدّث كل 90 ثانية تقريبًا. دفتر الأوامر وآخر الصفقات محاكاة حول السعر المرجعي. إذا انقطع المصدر أو أوقفته من الإعدادات تتحول المنصة تلقائيًا إلى أسعار محاكاة. لا ترتبط مدار بأي منصة تداول.</p></details>
     <details><summary>هل يربح التداول الذكي؟</summary><p>ليس بالضرورة — وغالبًا لا. في الاختبار التاريخي بالإعدادات الافتراضية كان عامل الربح 0.68 (خاسر) ونسبة الفوز 30% تقريبًا. الهدف تعليمي: أن ترى كيف تُبنى الإشارات وكيف تحمي قواعد المخاطر رأس المال. لا يتصل بأي منصة ولا يرسل أوامر حقيقية.</p></details>
     <details><summary>هل أحتاج إلى حساب أو تسجيل دخول؟</summary><p>لا. لا نطلب اسمًا أو بريدًا أو كلمة مرور. تُحفظ بياناتك التجريبية في متصفحك فقط (localStorage) ويمكنك مسحها بزر «إعادة ضبط البيانات».</p></details>
@@ -159,8 +159,8 @@
     <div><a class="logo" href="#top"><img src="assets/logo.svg" alt="" width="30" height="30"><span>مدار</span></a><p>منصة تعليمية تجريبية مستقلة لتداول الأصول الرقمية بأموال افتراضية.</p></div>
     <nav aria-label="روابط التذييل"><a href="app/">المنصة</a><a href="app/#trade">التداول</a><a href="app/#futures">العقود الآجلة</a><a href="#faq">الأسئلة</a></nav>
   </div>
-  <div class="wrap foot-note">© <span id="year">2026</span> مدار · نموذج تعليمي لا يقدّم خدمات مالية ولا تداولًا حقيقيًا ولا نصائح استثمارية. الأسعار مرجعية للعرض فقط وقد تتأخر أو تختلف. لا ارتباط رسميًا بأي منصة تداول.</div>
+  <div class="wrap foot-note">© <span id="year">2026</span> مدار · نموذج تعليمي لا يقدّم خدمات مالية للعامة ولا نصائح استثمارية. الأسعار مرجعية للعرض فقط وقد تتأخر أو تختلف. لا ارتباط رسميًا بأي منصة تداول.</div>
 </footer>
-<script src="js/landing.js?v=4" defer></script>
+<script src="js/landing.js?v=5" defer></script>
 </body>
 </html>
