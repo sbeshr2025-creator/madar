@@ -504,3 +504,28 @@ button.watch-item:hover{background:#ffffff06}
 [data-theme=light] .real-chip,[data-theme=light] .rc-badge{color:#b0142f;background:#e23b5512}
 @media(max-width:860px){.real-grid{grid-template-columns:1fr}.real-head{grid-template-columns:1fr}.rh-side{justify-items:start}}
 @media(max-width:520px){.real-head h2{font-size:25px}}
+/* v6 — الأداء، اليوميات، الماسح، DCA */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.kpi{padding:14px 16px;display:grid;gap:3px}.kpi small{color:var(--muted);font-size:12px}.kpi b{font-size:21px;font-variant-numeric:tabular-nums}.kpi em{font-style:normal;color:var(--muted);font-size:11.5px}
+.kpis.sm{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin:12px 0}.kpis.sm .kpi{background:var(--panel2);border-radius:12px;padding:10px 12px}.kpis.sm .kpi b{font-size:17px}
+.kpi-tags{font-size:14px!important;line-height:1.5}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit}
+span.chip{cursor:default;padding:3px 9px;font-size:11.5px}
+.chip.on{background:#7d82ff26;border-color:#7d82ff88;color:#c8caff}
+.chip.sig-vol{border-color:#f5a62466;color:#ffc56b}.chip.sig-brk{border-color:#36d5a066;color:var(--green)}.chip.sig-rsi{border-color:#ff718566;color:#ff9aab}.chip.sig-ema{border-color:#7d82ff66;color:#b9bcff}
+.quick-links{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.scan-bar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.scan-bar select,.j-filter input{background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 10px;font-family:inherit}
+.scan-table td{vertical-align:middle}.scan-table td:first-child{white-space:nowrap}.scan-act{white-space:nowrap}
+.spark{width:64px;height:20px;display:inline-block;vertical-align:middle;margin-inline-start:8px}.spark.up{color:var(--green)}.spark.down{color:var(--red)}
+.j-filter{display:grid;gap:8px;margin:10px 0}.j-filter input{width:100%;box-sizing:border-box}
+.j-list{list-style:none;margin:0;padding:0;display:grid;gap:10px;max-height:640px;overflow:auto}
+.j-list li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--panel2)}
+.j-head{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.j-head time{margin-inline-start:auto;color:var(--muted);font-size:11.5px}
+.j-list p{margin:6px 0;white-space:pre-wrap;line-height:1.7}.j-act{display:flex;gap:6px;justify-content:flex-end}
+.form-grid textarea{background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:8px 10px;font-family:inherit;resize:vertical}
+.outline.real-outline{border-color:#e23b5577;color:#ff9aab}
+[data-theme=light] .chip.on{color:#3a46c4}[data-theme=light] .chip.sig-vol{color:#a86300}[data-theme=light] .chip.sig-rsi,[data-theme=light] .outline.real-outline{color:#b0142f}
+html.in-tg .mobile-nav{padding-bottom:max(6px,env(safe-area-inset-bottom))}
+@media(max-width:520px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.kpi{padding:11px 12px}.kpi b{font-size:17px}.scan-table th:nth-child(4),.scan-table td:nth-child(4),.scan-table th:nth-child(6),.scan-table td:nth-child(6){display:none}.spark{display:none}}

@@ -63,5 +63,5 @@ function stop(){M.enabled=false;clearInterval(pollTimer);pollTimer=null;M.candle
 document.addEventListener('visibilitychange',()=>{if(M.enabled&&!document.hidden&&Date.now()-M.lastUpdate>POLL_MS)poll()});
 window.addEventListener('online',()=>{if(M.enabled){snapDownUntil=0;poll()}});
 const SRC_AR={snapshot:'لقطة أسعار عامة (Ajcoin)',coingecko:'CoinGecko العامة',sim:'محاكاة محلية',bundle:'بيانات تاريخية مضمّنة'};
-window.Market={state:M,start,stop,poll,loadCandles,simCandles,engineBars,bundle,on:fn=>listeners.add(fn),POLL_MS,SRC_AR,IDS};
+window.Market={snapOnly:async(sym,tf)=>{try{return await snapCandles(sym,tf)}catch(e){return null}},state:M,start,stop,poll,loadCandles,simCandles,engineBars,bundle,on:fn=>listeners.add(fn),POLL_MS,SRC_AR,IDS};
 })();

@@ -33,6 +33,14 @@ try{fromKb=new URLSearchParams(location.search).get('src')==='kb'}catch{}
     var out = null;
     if (a === "madar_refresh") out = "mdr";
     else if (a === "auto_smart") out = ({ status: "sm_st", real: "sm_real", paper: "sm_paper", resume: "sm_res", bt: "sm_bt" })[payload.op || "status"] || null;
+    else if (a === "madar_alerts") out = "mal";
+    else if (a === "madar_alert_del") out = /^[0-9a-f]{6}$/.test(String(payload.id || "")) ? "mad_" + payload.id : null;
+    else if (a === "madar_alert") {
+      var sy = baseSym(payload.sym), kk = String(payload.k || "p"), oo = payload.op === "b" ? "b" : "a", vv = Number(payload.v);
+      if (!/^[A-Z0-9]{1,15}$/.test(sy) || !/^[pcr]$/.test(kk) || !isFinite(vv)) return null;
+      var vs = (vv < 0 ? "m" : "") + encNum(Math.abs(vv));
+      out = "ma_" + sy + "_" + kk + oo + "_" + vs + (kk === "r" ? "_" + ({ "15m": "q", "1h": "h", "4h": "f" }[payload.tf] || payload.tf || "h") : "");
+    }
     else if (a === "balance") out = "bal";
     else if (a === "portfolio") out = "pf";
     else if (a === "alerts_list") out = "als";
@@ -175,7 +183,7 @@ async function load(){const cands=[];let url=null;try{url=new URLSearchParams(lo
   for(const c of cands){const o=await decode(c);if(o&&(!P||(o.t||0)>(P.t||0))){P=o;enc=c}}
   if(P&&enc){try{localStorage.setItem(KEY,enc)}catch{}}
   if(url){try{const q=new URLSearchParams(location.search);q.delete('mp');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash)}catch{}}
-  document.documentElement.classList.toggle('has-real',!!P);render();renderSmart();
+  document.documentElement.classList.toggle('has-real',!!P);render();renderSmart();if(P)document.dispatchEvent(new CustomEvent('madar:packet'));
   if(url&&P&&typeof navigate==='function'){const h=(location.hash||'').slice(1);if(!h||!/^[a-z]+$/.test(h))navigate('real')}}
 function forget(){if(!confirm('مسح لقطة حسابك الحقيقي من هذا الجهاز؟ (لا يؤثر على حسابك)'))return;try{localStorage.removeItem(KEY)}catch{}P=null;enc=null;document.documentElement.classList.remove('has-real');render();showToast('مُسحت بيانات الحساب من هذا الجهاز')}
 
@@ -233,6 +241,7 @@ function render(){const root=$('realRoot');if(!root)return;
   root.innerHTML=`<div class="real-head card pad"><div><span class="real-chip">🔴 حساب حقيقي · Gate.io</span><h2>${usd(total)}</h2><small class="muted">فوري ${usd(spotTot)} · عقود ${usd(futTot)}${f.up?` (غير محقق <span class="${f.up>=0?'up':'down'}">${usd(f.up)}</span>)`:''}</small></div>
     <div class="rh-side"><small class="${stale?'down':'muted'}">لقطة الرصيد ${ago(P.bt||P.t)}${stale?' — قديمة':''}</small><div class="sb-actions"><button class="outline" onclick="Real.refresh()">🔄 تحديث</button><button class="kill-btn" onclick="Real.kill()">⛔ إيقاف فوري</button></div></div>
     <div class="cap-bar"><span>المستخدم اليوم ${n2(used)} / ${cap[2]} USDT</span><div class="breadth"><i style="width:${Math.min(100,used/cap[2]*100)}%;background:var(--gold)"></i></div><small class="muted">حدود البوت: فوري ${cap[0]} · هامش عقود ${cap[1]} · رافعة ≤ ${cap[3]}× · لا سحب</small></div></div>
+  <div class="quick-links"><button class="chip" onclick="navigate('perf')">📊 الأداء</button><button class="chip" onclick="navigate('journal')">📝 اليوميات</button><button class="chip" onclick="navigate('scanner')">🔎 ماسح السوق</button><button class="chip" onclick="navigate('alerts')">🔔 تنبيهات ذكية</button><button class="chip" onclick="navigate('tools')">🗓️ شراء دوري</button></div>
   <div class="real-grid">
    <section class="card pad"><div class="table-title"><h2>أمر فوري حقيقي</h2><span class="sim-chip">يتطلب ✅ في البوت</span></div>
     <form id="rtSpot" class="form-grid" onsubmit="event.preventDefault();Real.spot()"><label>الاتجاه<select name="side"><option value="buy">شراء</option><option value="sell">بيع</option></select></label><label>الزوج<select name="sym">${opts(pl,sel)}</select></label><label>النوع<select name="type"><option value="market">سوق</option><option value="limit">محدد</option></select></label><label><span class="rt-amt-l">المبلغ (USDT)</span><input name="amt" type="number" step="any" min="0" inputmode="decimal" value="${cap[0]}"></label><label class="rt-px">سعر الأمر<input name="px" type="number" step="any" min="0" inputmode="decimal"></label><div class="form-actions"><button class="execute small-btn" type="submit">مراجعة الأمر</button><small class="muted" id="rtSpotHint"></small></div></form><p class="muted small">أقل أمر في Gate ≈ 3 USDT وحد البوت ${cap[0]} USDT، لذا الشراء الفوري عمليًا ${cap[0]} USDT.</p></section>
@@ -258,7 +267,7 @@ function renderSmart(){const el=$('smartRealRoot');if(!el)return;if(!P){el.inner
   el.innerHTML=`<div class="card pad real-smart"><div class="table-title"><h2>المحرك الذكي في بوتك (حساب حقيقي)</h2><span class="real-chip">${esc(mode)}</span></div><p class="muted small">المحرك الحقيقي <b>مطفأ افتراضيًا</b>. التشغيل الحقيقي يحتاج ضغط «حقيقي» هنا ثم ✅ في البوت (أو <code>/smart real</code>). الاختبار التاريخي: 127 صفقة بنتيجة −2.7% — <b>لا توجد أفضلية مثبتة</b>، فاستخدمه بمبالغ صغيرة فقط أو لا تستخدمه.</p><div class="sb-actions"><button class="outline" onclick="Real.smart('status')">الحالة</button><button class="outline" onclick="Real.smart('paper')">ورقي</button><button class="outline" onclick="Real.smart('bt')">اختبار تاريخي</button><button class="outline" onclick="Real.smart('resume')">استئناف</button><button class="execute small-btn" onclick="Real.smart('real')">تشغيل حقيقي…</button><button class="kill-btn" onclick="Real.kill()">⛔ إيقاف فوري</button></div></div>`}
 document.addEventListener('madar:view',e=>{if(e.detail==='real')render()});
 document.addEventListener('DOMContentLoaded',()=>{try{if(tg&&inTG){tg.ready();tg.expand&&tg.expand()}}catch{}load()});
-window.Real={get packet(){return P},get lastSent(){return lastSent},get inTelegram(){return inTG},get fromKeyboard(){return fromKb},send:sendAction,encodeStartParam,spot:spotSubmit,fut:futSubmit,alert:alertSubmit,cancel:cancelOrder,closeFut,kill,smart,refresh:()=>sendAction({action:'madar_refresh'}),forget,prefillSell,render,renderSmart,decode};
+window.Real={get packet(){return P},get lastSent(){return lastSent},get inTelegram(){return inTG},get fromKeyboard(){return fromKb},send:sendAction,encodeStartParam,spot:spotSubmit,fut:futSubmit,alert:alertSubmit,cancel:cancelOrder,closeFut,kill,smart,refresh:()=>sendAction({action:'madar_refresh'}),forget,prefillSell,render,renderSmart,decode,confirm:confirmSend};
 })();
 
 /* v5: عند الاستضافة تحت /madar/ على نطاق Ajcoin، عامل خدمة Ajcoin قد يخزّن صفحة مدار مكان صفحته الرئيسية؛ نصلح ذلك. */
